@@ -2,19 +2,21 @@
 
 An event-driven, highly decoupled, and serverless Google Cloud pipeline designed to automatically ingest raw CSV files from a "bronze" Cloud Storage landing bucket into a "silver" BigQuery dataset. Built for speed, resilience, and zero-maintenance scalability.
 
-## 🏗 Architecture Diagrams
+## 🏗 Architecture & UML Diagrams
+
+The following UML/C4 diagrams illustrate the architecture, event flow, and code deployment strategy for this pipeline[cite: 2].
 
 ### 1. System Context
-*The high-level flow of events from Storage to Data Warehouse.*
-![Context Diagram](doc/C4-Context-Diagram-Events-Pipeline.svg)
+*The high-level flow of events from the Cloud Storage Bucket to the BigQuery Data Warehouse.*
+![Context Diagram](doc/C4-Context-Diagram-Events-Pipeline.svg)[cite: 2]
 
 ### 2. Application Architecture
-*The internal components, highlighting the Producer-Broker-Worker pattern.*
-![Application Diagram](doc/C4-Cleaning-Pipeline-App-Diagram.svg)
+*The internal components of the cleaning pipeline, highlighting the Producer-Broker-Worker pattern.*
+![Application Diagram](doc/C4-Cleaning-Pipeline-App-Diagram.svg)[cite: 2]
 
 ### 3. Code & CI/CD Context
-*Repository structure and deployment flow.*
-![Code Diagram](doc/C4-Github-Code-App-Diagram.svg)
+*Repository structure and deployment flow mapping from GitHub to the GCP infrastructure.*
+![Code Diagram](doc/C4-Github-Code-App-Diagram.svg)[cite: 2]
 
 ---
 
