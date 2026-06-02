@@ -24,7 +24,7 @@ The following UML/C4 diagrams illustrate the architecture, event flow, and code 
 
 ---
 
-## ⚙️ How It Works (The "What")
+## **How It Works (The "What")**
 
 The pipeline utilizes an asynchronous, event-driven flow broken into three main stages:
 
