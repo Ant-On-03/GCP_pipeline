@@ -2,28 +2,28 @@ import functions_framework
 import json
 from google.cloud import pubsub_v1
 
-# Initialize the publisher client outside the main function. 
-# This is a best practice so the client is reused across "warm" function calls, saving time and memory.
 publisher = pubsub_v1.PublisherClient()
 
-# --- REPLACE THESE VARIABLES ---
 PROJECT_ID = "project-64048d36-9702-43b2-805"
-TOPIC_ID = "etl--csv-input-topic" 
-# -------------------------------
+TOPIC_ID = "etl--csv-input-topic"
 
-@functions_framework.cloud_event
-def hello_gcs(cloud_event):
-    data = cloud_event.data
+# 1. Change the decorator to .http instead of .cloud_event
+@functions_framework.http
+def hello_gcs(request):
+    # 2. Extract the JSON payload safely from the HTTP request body
+    request_json = request.get_json(silent=True)
+    
+    if not request_json:
+        return "No data received", 400
 
-    # Extract the metadata
-    bucket = data["bucket"]
-    name = data["name"]
-    timeCreated = data["timeCreated"]
-    event_type = cloud_event["type"]
+    # Extract the metadata from the raw payload
+    bucket = request_json.get("bucket")
+    name = request_json.get("name")
+    timeCreated = request_json.get("timeCreated")
+    event_type = request.headers.get("ce-type", "gcs-notification") # Fallback if header missing
 
     print(f"CODE STARTED, TRIGGERED BY {name} in bucket: {bucket}")
 
-    # 1. Package the specific data you want to send downstream into a dictionary
     message_dict = {
         "bucket": bucket,
         "name": name,
@@ -31,24 +31,16 @@ def hello_gcs(cloud_event):
         "event_type": event_type
     }
 
-    # 2. Convert the dictionary to a JSON string, then encode it to bytes
-    # (Pub/Sub requires the payload to be a byte string)
     message_bytes = json.dumps(message_dict).encode("utf-8")
-
-    # 3. Construct the full topic path
     topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
 
-    # 4. Publish the message to Pub/Sub
     print("LETS TRY PUBLISHING ON PUB/SUB")
     try:
-        # The publish method returns a "future" object
         future = publisher.publish(topic_path, data=message_bytes)
-        
-        # Calling .result() forces the function to wait until the publish succeeds, returning the message ID
-        message_id = future.result() 
+        message_id = future.result()
         print(f"YEEEEEEEEEEEEEEES! WE GOT PUB/SUB RIGHT MESSAGE {message_id} tO {TOPIC_ID}.")
+        return "OK", 200 # Return a success HTTP response
         
     except Exception as e:
         print(f"NOOOOOOOOOOOOOOOOO! THIS SUCKS PUB/SUB NOT BE WORKING {e}")
-        # Re-raise the exception so the Cloud Function registers this as a failed execution
-        raise e
+        return f"Internal Error: {e}", 500
