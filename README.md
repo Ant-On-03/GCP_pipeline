@@ -4,19 +4,23 @@ An event-driven, highly decoupled, and serverless Google Cloud pipeline designed
 
 ## 🏗 Architecture & UML Diagrams
 
-The following UML/C4 diagrams illustrate the architecture, event flow, and code deployment strategy for this pipeline[cite: 2].
+The following UML/C4 diagrams illustrate the architecture, event flow, and code deployment strategy for this pipeline.
 
 ### 1. System Context
 *The high-level flow of events from the Cloud Storage Bucket to the BigQuery Data Warehouse.*
-![Context Diagram](doc/C4-Context-Diagram-Events-Pipeline.svg)[cite: 2]
+![Context Diagram](doc/C4-Context-Diagram-Events-Pipeline.svg)
 
 ### 2. Application Architecture
 *The internal components of the cleaning pipeline, highlighting the Producer-Broker-Worker pattern.*
-![Application Diagram](doc/C4-Cleaning-Pipeline-App-Diagram.svg)[cite: 2]
+![Application Diagram](doc/C4-Cleaning-Pipeline-App-Diagram.svg)
 
 ### 3. Code & CI/CD Context
 *Repository structure and deployment flow mapping from GitHub to the GCP infrastructure.*
-![Code Diagram](doc/C4-Github-Code-App-Diagram.svg)[cite: 2]
+![Code Diagram](doc/C4-Github-Code-App-Diagram.svg)
+
+### 4. Data Ingestion Sequence
+*A step-by-step sequence of events from the initial CSV upload by the actor to the final data load into BigQuery.*
+![Sequence Diagram](doc/SequenceUML-DataIngestionFlow.drawio.svg)
 
 ---
 
@@ -25,7 +29,7 @@ The following UML/C4 diagrams illustrate the architecture, event flow, and code 
 The pipeline utilizes an asynchronous, event-driven flow broken into three main stages:
 
 1. **The Producer (`cloud_functions/producer`)**: 
-   When a new CSV is uploaded to the landing Cloud Storage bucket, an HTTP trigger (typically via Eventarc or GCS Webhooks) invokes the Producer Cloud Function. The Producer extracts the file metadata (`bucket`, `name`, `timeCreated`) and publishes this payload as a JSON message to a Pub/Sub topic (`etl--csv-input-topic`).
+   When a new CSV is uploaded to the landing Cloud Storage bucket, an HTTP trigger (via Eventarc) invokes the Producer Cloud Function. The Producer extracts the file metadata (`bucket`, `name`, `timeCreated`) and publishes this payload as a JSON message to a Pub/Sub topic (`etl--csv-input-topic`).
    
 2. **The Message Broker (Cloud Pub/Sub)**: 
    Pub/Sub acts as the intermediary buffer. It receives the metadata event and pushes it to the subscribed Worker.
