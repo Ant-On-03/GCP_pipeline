@@ -44,9 +44,3 @@ def hello_gcs(request):
     except Exception as e:
         print(f"NOOOOOOOOOOOOOOOOO! THIS SUCKS PUB/SUB NOT BE WORKING {e}")
         return f"Internal Error: {e}", 500
-
-
-
-# Lets try giving this an app so cloud run doesnt crash
-from functions_framework import create_app
-app = create_app(target="hello_pubsub")
