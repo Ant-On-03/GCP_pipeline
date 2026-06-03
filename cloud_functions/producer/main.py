@@ -6,10 +6,13 @@ publisher = pubsub_v1.PublisherClient()
 
 PROJECT_ID = "project-64048d36-9702-43b2-805"
 TOPIC_ID = "etl--csv-input-topic"
+print("THIS PART AT LEAST EXECUTES. SCRIPT OVERALL")
+
 
 # 1. Change the decorator to .http instead of .cloud_event
 @functions_framework.http
 def hello_gcs(request):
+    print("SIIIIIIII, SE EJECUTA HELLO_GCS")
     # 2. Extract the JSON payload safely from the HTTP request body
     request_json = request.get_json(silent=True)
     
