@@ -14,7 +14,7 @@ The following UML/C4 diagrams illustrate the architecture, event flow, and code 
 *The internal components of the cleaning pipeline, highlighting the Producer-Broker-Worker pattern.*
 ![Application Diagram](doc/C4-Cleaning-Pipeline-App-Diagram.svg)
 
-### 3. Code & CI/CD Context
+### 3. Code & Cloud Build Context
 *Repository structure and deployment flow mapping from GitHub to the GCP infrastructure.*
 ![Code Diagram](doc/C4-Github-Code-App-Diagram.svg)
 
