@@ -2,7 +2,7 @@
 
 An event-driven, highly decoupled, and serverless Google Cloud pipeline designed to automatically ingest raw CSV files from a "bronze" Cloud Storage landing bucket into a "silver" BigQuery dataset. Built for speed, resilience, and zero-maintenance scalability.
 
-## 🏗 Architecture & UML Diagrams
+## **Architecture & UML Diagrams**
 
 The following UML/C4 diagrams illustrate the architecture, event flow, and code deployment strategy for this pipeline.
 
@@ -24,7 +24,7 @@ The following UML/C4 diagrams illustrate the architecture, event flow, and code 
 
 ---
 
-## ⚙️ How It Works (The "What")
+## **How It Works (The "What")**
 
 The pipeline utilizes an asynchronous, event-driven flow broken into three main stages:
 
@@ -39,7 +39,7 @@ The pipeline utilizes an asynchronous, event-driven flow broken into three main 
 
 ---
 
-## 🧠 Design Rationale (The "Why")
+## **Design Rationale (The "Why")**
 
 As a cloud system designer, this architecture was chosen to prioritize **resilience, cost-efficiency, and zero-touch maintenance**:
 
@@ -61,7 +61,7 @@ Why not just have the GCS event trigger the BigQuery load directly?
 
 ---
 
-## 🚀 Setup & Deployment
+## **Setup & Deployment**
 
 ### Prerequisites
 * Google Cloud Project (`project-64048d36-9702-43b2-805` used in Producer).
