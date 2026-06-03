@@ -7,9 +7,10 @@ from google.cloud import bigquery
 
 # Initialize the BigQuery client outside the handler for faster performance (warm starts)
 bq_client = bigquery.Client()
-
+print("AT LEAST THIS PART GETS EXECUTED")
 @functions_framework.http
 def hello_pubsub(request):
+    print("THE FUNCTION HELLO_PUBSUB STARTS")
     request_json = request.get_json(silent=True)
 
     if request_json is None or 'message' not in request_json:
@@ -86,9 +87,3 @@ def hello_pubsub(request):
         print(f"Error processing Pub/Sub message: {e}")
         # Return 500 so Pub/Sub retries if it's a transient error
         abort(500, description=str(e))
-
-# give cloud run an app so it can start
-from functions_framework import create_app
-app = create_app(target="hello_pubsub")
-
-# force update
