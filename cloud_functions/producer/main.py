@@ -47,3 +47,5 @@ def hello_gcs(request):
     except Exception as e:
         print(f"NOOOOOOOOOOOOOOOOO! THIS SUCKS PUB/SUB NOT BE WORKING {e}")
         return f"Internal Error: {e}", 500
+
+# force update
