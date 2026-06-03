@@ -87,4 +87,8 @@ def hello_pubsub(request):
         # Return 500 so Pub/Sub retries if it's a transient error
         abort(500, description=str(e))
 
-# Forcing update
+# give cloud run an app so it can start
+from functions_framework import create_app
+app = create_app(target="hello_pubsub")
+
+# force update
