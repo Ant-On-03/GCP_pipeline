@@ -87,3 +87,5 @@ def hello_pubsub(request):
         print(f"Error processing Pub/Sub message: {e}")
         # Return 500 so Pub/Sub retries if it's a transient error
         abort(500, description=str(e))
+
+# force upload
