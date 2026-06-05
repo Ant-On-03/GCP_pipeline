@@ -1,6 +1,6 @@
 # GCP Serverless Data Ingestion Pipeline (Bronze to Silver)
 
-An event-driven, highly decoupled, and serverless Google Cloud pipeline designed to automatically ingest raw CSV files from a "bronze" Cloud Storage landing bucket into a "silver" BigQuery dataset. Built for speed, resilience, and zero-maintenance scalability.
+An event-driven, decoupled, and serverless Google Cloud pipeline designed to automatically ingest raw CSV files from a "bronze" Cloud Storage landing bucket into a "silver" BigQuery dataset.
 
 ## **Architecture & UML Diagrams**
 
@@ -26,40 +26,30 @@ The following UML/C4 diagrams illustrate the architecture, event flow, and code 
 
 ## **How It Works (The "What")**
 
-The pipeline utilizes an asynchronous, event-driven flow broken into three main stages:
+The pipeline is triggered by csv ingestion, so whenever a csv in uploaded manually or automatically to the gcp bucket, it automattically triggers a servless cloud function that queues the job as an event in a Pub/Sub topic.
 
-1. **The Producer (`cloud_functions/producer`)**: 
-   When a new CSV is uploaded to the landing Cloud Storage bucket, an HTTP trigger (via Eventarc) invokes the Producer Cloud Function. The Producer extracts the file metadata (`bucket`, `name`, `timeCreated`) and publishes this payload as a JSON message to a Pub/Sub topic (`etl--csv-input-topic`).
-   
-2. **The Message Broker (Cloud Pub/Sub)**: 
-   Pub/Sub acts as the intermediary buffer. It receives the metadata event and pushes it to the subscribed Worker.
+The broker (Cloud Pub/Sub) acts as the buffer. Recieves the event and lets workers pull it.
 
-3. **The Worker (`cloud_functions/worker`)**: 
-   Triggered via HTTP push from Pub/Sub, the Worker decodes the message. It dynamically calculates the target BigQuery table name based on the file's directory path (e.g., `landing_zone/products/products8.csv` maps to the `products` table). It then issues a direct `load_table_from_uri` job to BigQuery, appending the data to the `csv_silver_tables` dataset while allowing for automatic schema updates.
+Another function (the worker) consumes that topic. It is a pipeline that injest the tables into BigQuery.
 
----
+the worker performs table name cleaning, dynamic table creation/detection. It then issues a direct `load_table_from_uri` job to BigQuery, appending the data to the `csv_silver_tables` dataset while allowing for automatic schema updates.
+
+No idempotency assurance is performed in the pipeline.
+
+
 
 ## **Design Rationale (The "Why")**
 
-As a cloud system designer, this architecture was chosen to prioritize **resilience, cost-efficiency, and zero-touch maintenance**:
+The pipeline is designed to be scalable, simple, decoupled and asyncronous. 
 
-### 1. Decoupled Architecture via Pub/Sub
-Why not just have the GCS event trigger the BigQuery load directly?
-* **Resilience & Retries:** If BigQuery is temporarily unavailable, or if the Worker function hits an execution timeout, the payload isn't lost. Pub/Sub will automatically retry pushing the message.
-* **Separation of Concerns:** The Producer only cares about *capturing* the event. The Worker only cares about *processing* it. This makes it trivial to add new subscribers later (e.g., triggering a Slack notification or a data-quality check) without touching the ingestion logic.
+Queue-like behaviour:
+By having a cloud function publish events, we ensure no bottlenecks on getting the data published. It is a lightweight function that just ensures the job will eventually get done. If bigquery fails or we get a massive dump at once, the jobs dont get lost, they just stay in the queue for longer.
 
-### 2. Serverless Compute (Cloud Functions)
-* **Cost Efficiency:** By using HTTP-triggered Cloud Functions, you only pay for the exact milliseconds the functions run. The system scales to zero during idle times and can spin up hundreds of concurrent instances during batch upload spikes. 
+The worker consuming the topic does the heavy lifting. It can easily be scaled to perform complex ETL operations.
 
-### 3. Pushing Compute to the Data Warehouse
-* **Fast & Light:** Notice that the Worker function *does not* download the CSV, parse it line-by-line, and stream it to BigQuery. Instead, it passes a GCS URI to BigQuery and says, *"Load this."* This offloads the heavy lifting (parsing, type-inference, and loading) to BigQuery's massive distributed backend, keeping the Cloud Function executions incredibly fast, cheap, and immune to memory limits.
+Serverless:
+Cloud functions' containers only get deployed whenever triggered, reducing cloud costs.
 
-### 4. Dynamic Routing & Emergent Schema Evolution
-* **Zero-Touch Maintenance:** The pipeline is designed to be "smart." 
-    * **Dynamic Tables:** By parsing the parent folder (`path_parts[-2]`), a data engineer can create a new pipeline simply by dropping a file into a new folder. No code updates are required to map to a new table.
-    * **Schema Evolution:** The inclusion of `bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION` means that if upstream providers add new columns to their CSVs, BigQuery will seamlessly append the new columns to the table schema without breaking the pipeline.
-
----
 
 ## **Setup & Deployment**
 
