@@ -50,11 +50,17 @@ The worker consuming the topic does the heavy lifting. It can easily be scaled t
 Serverless:
 Cloud functions' containers only get deployed whenever triggered, reducing cloud costs.
 
+## Future Improvements
+
+- Add idempotency controls
+- Add dead-letter topics
+- Migrate transformation logic to Dataflow
+- Explore Dataplex AI agents and identify opportunities for new capabilities
 
 ## **Setup & Deployment**
 
 ### Prerequisites
-* Google Cloud Project (`project-64048d36-9702-43b2-805` used in Producer).
+* Google Cloud Project.
 * Cloud Pub/Sub Topic: `etl--csv-input-topic`.
 * BigQuery Dataset: `csv_silver_tables`.
 
