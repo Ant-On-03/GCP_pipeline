@@ -1,0 +1,62 @@
+steps:
+  - name: gcr.io/k8s-skaffold/pack
+    env:
+      - GOOGLE_FUNCTION_TARGET=$_FUNCTION_TARGET
+    args:
+      - build
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+      - '--builder=gcr.io/buildpacks/builder:latest'
+      - '--network=cloudbuild'
+      - '--publish'
+      - '--path=cloud_functions/producer'
+      - '--env=GOOGLE_FUNCTION_TARGET'
+    id: Buildpack
+    entrypoint: pack
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - pull
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+    id: Pull
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+    id: Push
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    args:
+      - run
+      - services
+      - update
+      - $_SERVICE_NAME
+      - '--platform=managed'
+      - >-
+        --image=$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+      - >-
+        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
+      - '--region=$_DEPLOY_REGION'
+      - '--quiet'
+    id: Deploy
+    entrypoint: gcloud
+images:
+  - >-
+    $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+options:
+  substitutionOption: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _PLATFORM: managed
+  _AR_HOSTNAME: europe-southwest1-docker.pkg.dev
+  _TRIGGER_ID: b4ab791d-c191-4349-a0f3-f463de585947
+  _FUNCTION_TARGET: hello_gcs
+  _AR_REPOSITORY: cloud-run-source-deploy
+  _SERVICE_NAME: queue-input-producer
+  _AR_PROJECT_ID: project-64048d36-9702-43b2-805
+  _DEPLOY_REGION: europe-southwest1
+  REPO_NAME: gcp_pipeline
+tags:
+  - gcp-cloud-build-deploy-cloud-run
+  - gcp-cloud-build-deploy-cloud-run-managed
+  - queue-input-producer
