@@ -4,7 +4,9 @@ import re
 import functions_framework
 from flask import abort
 from google.cloud import bigquery
-
+#  
+#   
+#   
 # Initialize the BigQuery client outside the handler for faster performance (warm starts)
 bq_client = bigquery.Client()
 print("AT LEAST THIS PART GETS EXECUTED")
