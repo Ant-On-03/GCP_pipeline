@@ -1,0 +1,14 @@
+config {
+    type: "table",
+    schema: "dataplex_learn_NYC_Bikes", // this is WHAT dataset it will end on.
+    name: "trips_clean"
+}
+
+SELECT
+  GENERATE_UUID() AS trip_id,
+  * EXCEPT (birth_year),
+  COALESCE(birth_year, -1) AS birth_year
+FROM ${ref("citibike_trips_bronze")}
+WHERE bikeid IS NOT NULL
+  AND end_station_id IS NOT NULL 
+  AND tripduration IS NOT NULL

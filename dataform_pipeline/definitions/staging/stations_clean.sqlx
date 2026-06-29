@@ -1,0 +1,48 @@
+config {
+    type: "table",
+    schema: "dataplex_learn_NYC_Bikes",
+    name: "stations_clean",
+    assertions: {
+        uniqueKey: ["station_id"],
+        nonNull: ["station_id", "station_name"]
+    }
+}
+
+SELECT
+  station_id,
+  TRIM(name) AS station_name, -- ¡Arreglado! Mapeamos 'name' a 'station_name'
+  short_name,
+  latitude,
+  longitude,
+  region_id,
+  capacity,
+  
+  -- Estos campos te van a servir muchísimo para analizar la disponibilidad
+  num_bikes_available,
+  num_bikes_disabled,
+  num_docks_available,
+  num_docks_disabled,
+  
+  -- Estados de la estación
+  is_installed,
+  is_renting,
+  is_returning,
+  
+  last_reported,
+  CURRENT_TIMESTAMP() AS processed_at
+
+FROM
+  ${ref("citibike_stations_bronze")} 
+
+WHERE
+  station_id IS NOT NULL
+  AND name IS NOT NULL
+  -- Filtro geográfico de seguridad para Nueva York
+  AND latitude BETWEEN 40.0 AND 42.0
+  AND longitude BETWEEN -75.0 AND -72.0
+
+-- La magia de Silver: Nos quedamos SOLO con el último estado reportado por cada estación
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY station_id 
+  ORDER BY last_reported DESC
+) = 1

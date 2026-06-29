@@ -1,0 +1,19 @@
+config {
+    type: "table",
+    schema: "dataplex_learn_NYC_Bikes",
+    name: "station_dim"
+}
+
+SELECT
+  station_id,
+  station_name,
+  short_name,
+  latitude,
+  longitude,
+  region_id,
+  CAPACITY,
+  is_installed
+FROM
+  ${ref("stations_clean")}
+QUALIFY
+  ROW_NUMBER() OVER (PARTITION BY station_id ORDER BY last_reported DESC ) = 1

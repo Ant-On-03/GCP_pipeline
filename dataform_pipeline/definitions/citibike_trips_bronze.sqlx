@@ -1,0 +1,9 @@
+config {
+    type: "declaration",
+    database: "project-64048d36-9702-43b2-805",
+    schema: "dataplex_learn_NYC_Bikes",
+    name: "citibike_trips_bronze"
+}
+
+  -- This tells Dataform:
+  -- "This table already exists in BigQuery"

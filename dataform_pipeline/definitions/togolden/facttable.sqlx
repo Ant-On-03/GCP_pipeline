@@ -1,0 +1,29 @@
+config {
+    type: "table",
+    schema: "dataplex_learn_NYC_Bikes", 
+    name: "facts_trip"
+}
+
+SELECT
+  trip_id,
+  (tripduration / 60.0) AS duration_minutes,
+  starttime,
+  stoptime,
+  start_station_id,
+  end_station_id,
+  bikeid, -- ¡Arreglado aquí! Sin guion bajo para que coincida con el dataset original
+  usertype,
+  -- Dynamically calculate age based on the year the trip actually happened
+  CASE
+    WHEN birth_year = -1 THEN 'Unknown'
+    WHEN (EXTRACT(YEAR FROM starttime) - birth_year) < 20 THEN 'Under 20'
+    WHEN (EXTRACT(YEAR FROM starttime) - birth_year) BETWEEN 20 AND 29 THEN '20-29'
+    WHEN (EXTRACT(YEAR FROM starttime) - birth_year) BETWEEN 30 AND 39 THEN '30-39'
+    WHEN (EXTRACT(YEAR FROM starttime) - birth_year) BETWEEN 40 AND 49 THEN '40-49'
+    WHEN (EXTRACT(YEAR FROM starttime) - birth_year) BETWEEN 50 AND 59 THEN '50-59'
+    WHEN (EXTRACT(YEAR FROM starttime) - birth_year) BETWEEN 60 AND 69 THEN '60-69'
+    ELSE '70+'
+  END AS age_group,
+  gender
+FROM
+  ${ref("trips_clean")}
